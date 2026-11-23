@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f6f7fb" />
+  <title>PRB Creator — AI Roblox Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <button class="brand" aria-label="PRB home">
+        <span class="brand-mark"><span></span></span>
+        <span>PRB</span>
+      </button>
+
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="Create">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg>
+          <span>Create</span>
+        </button>
+        <button class="nav-item" data-view="Projects">
+          <svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><path d="M8 8h8M8 12h5"/></svg>
+          <span>Projects</span>
+        </button>
+        <button class="nav-item" data-view="Assets">
+          <svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>
+          <span>Assets</span>
+        </button>
+        <button class="nav-item" data-view="Community">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2"/><path d="M3.5 19c.5-4 2.3-6 5.5-6s5 2 5.5 6M15 14.5c3.5 0 5.2 1.5 5.5 4.5"/></svg>
+          <span>Community</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="nav-item" data-view="Notifications">
+          <span class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><i></i></span>
+          <span>Notifications</span>
+        </button>
+        <button class="profile" aria-label="Open profile">
+          <span class="avatar">PB</span>
+          <span class="profile-copy"><strong>Parker</strong><small>Free plan</small></span>
+          <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <div class="topbar-title"><span>Creator Studio</span></div>
+        <div class="topbar-actions">
+          <button class="credits"><span class="bolt">✦</span><span>240 credits</span></button>
+          <button class="icon-button" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg></button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <div class="hero-heading">
+          <p class="eyebrow">WELCOME BACK, PARKER</p>
+          <h1>What will you create today?</h1>
+        </div>
+
+        <div class="prompt-card">
+          <textarea id="promptInput" rows="3" placeholder="Describe the Roblox experience you want to build..." aria-label="Describe your idea"></textarea>
+          <div class="prompt-footer">
+            <div class="prompt-tools">
+              <button class="tool-button" id="attachButton" aria-label="Attach"><svg viewBox="0 0 24 24"><path d="m20 12-8.5 8.5a5 5 0 0 1-7-7L13 5a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg></button>
+              <button class="tool-button" id="styleButton"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="m12 7 2 3 3 2-3 2-2 3-2-3-3-2 3-2z"/></svg><span>Style</span></button>
+              <button class="tool-button" id="mobileButton"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg><span>Mobile ready</span></button>
+            </div>
+            <button class="generate-button" id="generateButton"><span>Generate</span><svg viewBox="0 0 24 24"><path d="m5 12 14-7-4 14-3-6z"/></svg></button>
+          </div>
+          <input type="file" id="fileInput" hidden accept="image/*,.rbxl,.rbxlx,.obj,.fbx,.gltf" />
+        </div>
+
+        <div class="section-heading">
+          <div><p class="eyebrow">START WITH A TEMPLATE</p><h2>Popular experiences</h2></div>
+          <button class="text-button" id="viewAllTemplates">View all <span>→</span></button>
+        </div>
+
+        <div class="template-grid">
+          <button class="template-card" data-prompt="Create a colorful obby tycoon with checkpoints, coins, upgrades, and a vibrant neon style">
+            <div class="template-art art-obby"><div class="island island-a"></div><div class="island island-b"></div><div class="island island-c"></div><div class="character"></div></div>
+            <div class="template-info"><strong>Neon Obby</strong><span>Adventure · Obstacle course</span></div>
+          </button>
+          <button class="template-card" data-prompt="Build a cozy roleplay town with houses, shops, vehicles, emotes, and a friendly UI">
+            <div class="template-art art-town"><div class="sun"></div><div class="house h1"></div><div class="house h2"></div><div class="tree"></div></div>
+            <div class="template-info"><strong>Cozy Roleplay</strong><span>Social · Roleplay</span></div>
+          </button>
+          <button class="template-card" data-prompt="Create a competitive racing game with drifting, lap checkpoints, kart upgrades, and leaderboard UI">
+            <div class="template-art art-racing"><div class="road"></div><div class="kart k1"></div><div class="kart k2"></div></div>
+            <div class="template-info"><strong>Turbo Racers</strong><span>Racing · Competitive</span></div>
+          </button>
+          <button class="template-card" data-prompt="Make a peaceful showcase world with a modern UI, animated nature, secrets, and ambient music">
+            <div class="template-art art-world"><div class="moon"></div><div class="mountain m1"></div><div class="mountain m2"></div><div class="glow"></div></div>
+            <div class="template-info"><strong>Dream World</strong><span>Experience · Showcase</span></div>
+          </button>
+        </div>
+
+        <div class="section-heading recent-heading">
+          <div><p class="eyebrow">CONTINUE WHERE YOU LEFT OFF</p><h2>Recent projects</h2></div>
+          <button class="text-button" id="viewAllProjects">View all <span>→</span></button>
+        </div>
+
+        <div class="project-list" id="projectList">
+          <button class="project-row">
+            <div class="project-thumb thumb-one"><div></div></div>
+            <div class="project-details"><strong>Skyline Tycoon</strong><span>Edited 2 hours ago</span></div>
+            <span class="status"><i></i> Draft</span>
+            <span class="project-arrow">•••</span>
+          </button>
+          <button class="project-row">
+            <div class="project-thumb thumb-two"><div></div></div>
+            <div class="project-details"><strong>Neon Drift</strong><span>Edited yesterday</span></div>
+            <span class="status"><i></i> Draft</span>
+            <span class="project-arrow">•••</span>
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"><span class="toast-icon">✓</span><span id="toastText">Generation started</span></div>
+
+  <div class="modal" id="generationModal" aria-hidden="true">
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose" aria-label="Close">×</button>
+      <div class="generation-preview">
+        <div class="preview-sky"><div class="preview-sun"></div><div class="preview-platform p1"></div><div class="preview-platform p2"></div><div class="preview-character"></div></div>
+      </div>
+      <p class="eyebrow">YOUR PROJECT IS READY</p>
+      <h3 id="modalTitle">New Roblox Experience</h3>
+      <p class="modal-description">Your world has been generated with a mobile-ready layout, UI, and starter scripts.</p>
+      <div class="modal-actions">
+        <button class="secondary-button" id="saveProject">Save draft</button>
+        <button class="generate-button" id="exportButton"><span>Export</span><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14"/></svg></button>
+      </div>
+      <div class="export-menu" id="exportMenu">
+        <button data-format=".rbxl">Roblox Place <strong>.rbxl</strong></button>
+        <button data-format=".rbxlx">Roblox XML <strong>.rbxlx</strong></button>
+        <button data-format=".glTF">3D Model <strong>.glTF</strong></button>
+        <button data-format=".obj">Universal Model <strong>.obj</strong></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
