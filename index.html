@@ -1,155 +1,845 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#f6f7fb" />
-  <title>PRB Creator — AI Roblox Studio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloxy 3D - Custom Studio Generator</title>
+    <!-- Three.js & Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
+    <style>
+        :root {
+            --gold: #ffd700;
+            --pink: #ff69b4;
+            --dark-bg: #090909;
+            --card-bg: #121212;
+            --panel-bg: #1a1a1a;
+            --text-light: #ffffff;
+            --text-gray: #b0b0b0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border: 2px solid var(--pink);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(255, 105, 180, 0.3);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: var(--gold);
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 13px;
+            border: 1px solid var(--pink);
+        }
+
+        .coins {
+            color: var(--gold);
+        }
+
+        .arcade-btn {
+            background: linear-gradient(135deg, #00ffcc, #00b0ff);
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .arcade-btn:hover {
+            opacity: 0.9;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 1.25fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .control-panel {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--pink);
+        }
+
+        .forge-viewport {
+            background: radial-gradient(circle at center, #181818 0%, #040404 100%);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            height: 480px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            min-height: 480px;
+            cursor: grab;
+        }
+
+        #canvas-container:active {
+            cursor: grabbing;
+        }
+
+        .viewport-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .variant-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 105, 180, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--pink);
+            border: 1px solid var(--pink);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        h3 {
+            margin-top: 0;
+            color: var(--pink);
+            font-size: 15px;
+        }
+
+        label {
+            font-size: 11px;
+            color: var(--text-gray);
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        input[type="text"], select {
+            width: calc(100% - 16px);
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background: #1a1a1a;
+            color: white;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .quick-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 10px;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .tag-btn {
+            background: #1a1a1a;
+            color: var(--text-gray);
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .tag-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .row-3 {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 30px;
+            padding: 2px;
+            cursor: pointer;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 9px;
+            font-size: 11px;
+            color: var(--text-gray);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--pink);
+            cursor: pointer;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        button.action-btn {
+            background: linear-gradient(135deg, var(--pink), var(--gold));
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.15s;
+            font-size: 13px;
+            width: 100%;
+        }
+
+        button.action-btn:hover {
+            opacity: 0.9;
+        }
+
+        button.secondary-btn {
+            background: #333;
+            color: var(--gold);
+            font-weight: bold;
+            border: 1px solid var(--gold);
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        button.secondary-btn:hover {
+            background: #3d3d3d;
+        }
+
+        button:disabled {
+            background: #555 !important;
+            color: #888 !important;
+            border-color: #555 !important;
+            cursor: not-allowed;
+        }
+
+        /* High-Visibility 30-Second Progress Bar & Loading Ball */
+        .progress-container {
+            margin: 10px 0;
+            display: none;
+            background: #111111;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .progress-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .loading-ball {
+            width: 22px;
+            height: 22px;
+            background: var(--pink);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--pink);
+            animation: bounceBall 0.6s infinite alternate ease-in-out;
+            flex-shrink: 0;
+        }
+
+        @keyframes bounceBall {
+            0% { transform: scale(0.7); opacity: 0.4; box-shadow: 0 0 4px var(--pink); }
+            100% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 18px var(--gold); }
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            background: #1a1a1a;
+            height: 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--pink), var(--gold));
+            transition: width 0.3s ease-in-out;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border: 2px solid #00ffcc;
+            border-radius: 12px;
+            padding: 20px;
+            width: 340px;
+            text-align: center;
+        }
+        .clicker-box {
+            background: #111;
+            border: 2px dashed #00ffcc;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 15px 0;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ffcc;
+            user-select: none;
+        }
+        .clicker-box:active {
+            background: #00ffcc;
+            color: #000;
+        }
+
+        .output-box {
+            margin-top: 8px;
+            background: #1a1a1a;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--text-gray);
+            max-height: 50px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+    </style>
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar" aria-label="Main navigation">
-      <button class="brand" aria-label="PRB home">
-        <span class="brand-mark"><span></span></span>
-        <span>PRB</span>
-      </button>
 
-      <nav class="nav-list">
-        <button class="nav-item active" data-view="Create">
-          <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg>
-          <span>Create</span>
-        </button>
-        <button class="nav-item" data-view="Projects">
-          <svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><path d="M8 8h8M8 12h5"/></svg>
-          <span>Projects</span>
-        </button>
-        <button class="nav-item" data-view="Assets">
-          <svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>
-          <span>Assets</span>
-        </button>
-        <button class="nav-item" data-view="Community">
-          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2"/><path d="M3.5 19c.5-4 2.3-6 5.5-6s5 2 5.5 6M15 14.5c3.5 0 5.2 1.5 5.5 4.5"/></svg>
-          <span>Community</span>
-        </button>
-      </nav>
+<div class="container">
+    <header>
+        <h1>🧱 Bloxy 3D ✨</h1>
+        <p style="color: var(--text-gray); margin: 4px 0 0 0; font-size: 12px;">Made by Bloxy 3D | Custom Procedural Studio</p>
+    </header>
 
-      <div class="sidebar-footer">
-        <button class="nav-item" data-view="Notifications">
-          <span class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><i></i></span>
-          <span>Notifications</span>
-        </button>
-        <button class="profile" aria-label="Open profile">
-          <span class="avatar">PB</span>
-          <span class="profile-copy"><strong>Parker</strong><small>Free plan</small></span>
-          <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-      </div>
-    </aside>
-
-    <main class="main-content">
-      <header class="topbar">
-        <button class="mobile-menu" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-        <div class="topbar-title"><span>Creator Studio</span></div>
-        <div class="topbar-actions">
-          <button class="credits"><span class="bolt">✦</span><span>240 credits</span></button>
-          <button class="icon-button" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg></button>
-        </div>
-      </header>
-
-      <section class="workspace">
-        <div class="hero-heading">
-          <p class="eyebrow">WELCOME BACK, PARKER</p>
-          <h1>What will you create today?</h1>
-        </div>
-
-        <div class="prompt-card">
-          <textarea id="promptInput" rows="3" placeholder="Describe the Roblox experience you want to build..." aria-label="Describe your idea"></textarea>
-          <div class="prompt-footer">
-            <div class="prompt-tools">
-              <button class="tool-button" id="attachButton" aria-label="Attach"><svg viewBox="0 0 24 24"><path d="m20 12-8.5 8.5a5 5 0 0 1-7-7L13 5a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg></button>
-              <button class="tool-button" id="styleButton"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="m12 7 2 3 3 2-3 2-2 3-2-3-3-2 3-2z"/></svg><span>Style</span></button>
-              <button class="tool-button" id="mobileButton"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg><span>Mobile ready</span></button>
-            </div>
-            <button class="generate-button" id="generateButton"><span>Generate</span><svg viewBox="0 0 24 24"><path d="m5 12 14-7-4 14-3-6z"/></svg></button>
-          </div>
-          <input type="file" id="fileInput" hidden accept="image/*,.rbxl,.rbxlx,.obj,.fbx,.gltf" />
-        </div>
-
-        <div class="section-heading">
-          <div><p class="eyebrow">START WITH A TEMPLATE</p><h2>Popular experiences</h2></div>
-          <button class="text-button" id="viewAllTemplates">View all <span>→</span></button>
-        </div>
-
-        <div class="template-grid">
-          <button class="template-card" data-prompt="Create a colorful obby tycoon with checkpoints, coins, upgrades, and a vibrant neon style">
-            <div class="template-art art-obby"><div class="island island-a"></div><div class="island island-b"></div><div class="island island-c"></div><div class="character"></div></div>
-            <div class="template-info"><strong>Neon Obby</strong><span>Adventure · Obstacle course</span></div>
-          </button>
-          <button class="template-card" data-prompt="Build a cozy roleplay town with houses, shops, vehicles, emotes, and a friendly UI">
-            <div class="template-art art-town"><div class="sun"></div><div class="house h1"></div><div class="house h2"></div><div class="tree"></div></div>
-            <div class="template-info"><strong>Cozy Roleplay</strong><span>Social · Roleplay</span></div>
-          </button>
-          <button class="template-card" data-prompt="Create a competitive racing game with drifting, lap checkpoints, kart upgrades, and leaderboard UI">
-            <div class="template-art art-racing"><div class="road"></div><div class="kart k1"></div><div class="kart k2"></div></div>
-            <div class="template-info"><strong>Turbo Racers</strong><span>Racing · Competitive</span></div>
-          </button>
-          <button class="template-card" data-prompt="Make a peaceful showcase world with a modern UI, animated nature, secrets, and ambient music">
-            <div class="template-art art-world"><div class="moon"></div><div class="mountain m1"></div><div class="mountain m2"></div><div class="glow"></div></div>
-            <div class="template-info"><strong>Dream World</strong><span>Experience · Showcase</span></div>
-          </button>
-        </div>
-
-        <div class="section-heading recent-heading">
-          <div><p class="eyebrow">CONTINUE WHERE YOU LEFT OFF</p><h2>Recent projects</h2></div>
-          <button class="text-button" id="viewAllProjects">View all <span>→</span></button>
-        </div>
-
-        <div class="project-list" id="projectList">
-          <button class="project-row">
-            <div class="project-thumb thumb-one"><div></div></div>
-            <div class="project-details"><strong>Skyline Tycoon</strong><span>Edited 2 hours ago</span></div>
-            <span class="status"><i></i> Draft</span>
-            <span class="project-arrow">•••</span>
-          </button>
-          <button class="project-row">
-            <div class="project-thumb thumb-two"><div></div></div>
-            <div class="project-details"><strong>Neon Drift</strong><span>Edited yesterday</span></div>
-            <span class="status"><i></i> Draft</span>
-            <span class="project-arrow">•••</span>
-          </button>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <div class="toast" id="toast" role="status"><span class="toast-icon">✓</span><span id="toastText">Generation started</span></div>
-
-  <div class="modal" id="generationModal" aria-hidden="true">
-    <div class="modal-card">
-      <button class="modal-close" id="modalClose" aria-label="Close">×</button>
-      <div class="generation-preview">
-        <div class="preview-sky"><div class="preview-sun"></div><div class="preview-platform p1"></div><div class="preview-platform p2"></div><div class="preview-character"></div></div>
-      </div>
-      <p class="eyebrow">YOUR PROJECT IS READY</p>
-      <h3 id="modalTitle">New Roblox Experience</h3>
-      <p class="modal-description">Your world has been generated with a mobile-ready layout, UI, and starter scripts.</p>
-      <div class="modal-actions">
-        <button class="secondary-button" id="saveProject">Save draft</button>
-        <button class="generate-button" id="exportButton"><span>Export</span><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14"/></svg></button>
-      </div>
-      <div class="export-menu" id="exportMenu">
-        <button data-format=".rbxl">Roblox Place <strong>.rbxl</strong></button>
-        <button data-format=".rbxlx">Roblox XML <strong>.rbxlx</strong></button>
-        <button data-format=".glTF">3D Model <strong>.glTF</strong></button>
-        <button data-format=".obj">Universal Model <strong>.obj</strong></button>
-      </div>
+    <div class="stats-bar">
+        <span>Builder: <span style="color: var(--pink);">Bloxy 3D Creator</span></span>
+        <span>Daily Coins: <span id="coinCount" class="coins">200</span> DevBucks</span>
+        <button class="arcade-btn" onclick="openMiniGame()">🎮 Earn Tokens</button>
     </div>
-  </div>
 
-  <script src="app.js"></script>
+    <!-- Mini-Game Arcade Modal -->
+    <div id="arcadeModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: #00ffcc; margin-top:0;">⚡ DevBucks Arcade</h3>
+            <p style="font-size:12px; color:var(--text-gray);">Tap the core as fast as you can to earn free tokens for your Bloxy 3D studio builds!</p>
+            <div class="clicker-box" onclick="tapCore()">
+                🔨 TAP TO FORGE!<br><span id="tapScore" style="font-size: 24px; color: #ffd700;">0</span> / 15
+            </div>
+            <button class="action-btn" style="background:#444; color:white;" onclick="closeMiniGame()">Close & Collect</button>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- Left Column: Controls -->
+        <div class="control-panel">
+            <h3>🛠️ Bloxy Custom Generator</h3>
+            <input type="text" id="aiPrompt" placeholder="Type ANY custom prompt (e.g. Cyber Mech, Laser Sword)..." value="Cybernetic Custom Mech">
+            
+            <div class="quick-tags">
+                <button class="tag-btn" onclick="setPrompt('Cyber Mecha Robot')">🤖 Mecha</button>
+                <button class="tag-btn" onclick="setPrompt('Crystal Dragon Wing')">🐉 Dragon</button>
+                <button class="tag-btn" onclick="setPrompt('Laser Sword Weapon')">⚔️ Sword</button>
+                <button class="tag-btn" onclick="setPrompt('Floating Sky Island')">🏝️ Island</button>
+                <button class="tag-btn" onclick="setPrompt('Futuristic Spaceship')">🛸 Spaceship</button>
+                <button class="tag-btn" onclick="setPrompt('Wizard Magic Staff')">🪄 Staff</button>
+                <button class="tag-btn" onclick="setPrompt('Royal Throne Seat')">👑 Throne</button>
+                <button class="tag-btn" onclick="setPrompt('Energy Jetpack')">🚀 Jetpack</button>
+            </div>
+
+            <div class="row-3">
+                <div class="col">
+                    <label>Primary Color:</label>
+                    <input type="color" id="primaryColor" value="#ff69b4" onchange="updateMaterials()">
+                </div>
+                <div class="col">
+                    <label>Secondary:</label>
+                    <input type="color" id="secondaryColor" value="#9c27b0" onchange="updateMaterials()">
+                </div>
+                <div class="col">
+                    <label>Accent:</label>
+                    <input type="color" id="accentColor" value="#ffd700" onchange="updateMaterials()">
+                </div>
+            </div>
+
+            <div class="row-3">
+                <div class="col">
+                    <label>Material Finish:</label>
+                    <select id="materialType" onchange="updateMaterials()">
+                        <option value="pbr">High-Gloss PBR</option>
+                        <option value="matte">Matte Studio Plastic</option>
+                        <option value="chrome">Mirror Chrome</option>
+                        <option value="neon">Glowing Cyber Neon</option>
+                        <option value="glass">Crystalline Glass</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label>Roughness:</label>
+                    <input type="range" id="roughnessSlider" min="0.0" max="1.0" step="0.05" value="0.12" oninput="updateMaterials()">
+                </div>
+                <div class="col">
+                    <label>Metalness:</label>
+                    <input type="range" id="metalnessSlider" min="0.0" max="1.0" step="0.05" value="0.75" oninput="updateMaterials()">
+                </div>
+            </div>
+
+            <label>Reshape Dimensions:</label>
+            <div class="slider-row">
+                <div class="col">
+                    <span>W: <span id="valW">1.0</span></span>
+                    <input type="range" id="scaleX" min="0.3" max="3.5" step="0.1" value="1.0" oninput="updateScale()">
+                </div>
+                <div class="col">
+                    <span>H: <span id="valH">1.0</span></span>
+                    <input type="range" id="scaleY" min="0.3" max="3.5" step="0.1" value="1.0" oninput="updateScale()">
+                </div>
+                <div class="col">
+                    <span>D: <span id="valD">1.0</span></span>
+                    <input type="range" id="scaleZ" min="0.3" max="3.5" step="0.1" value="1.0" oninput="updateScale()">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button id="generateBtn" class="action-btn" onclick="generate3DModel()">🎲 Generate Custom 3D Asset (20 Coins)</button>
+                <button class="secondary-btn" onclick="randomizePalette()" title="Randomize Colors">🎨 Palette</button>
+            </div>
+            
+            <!-- High-Visibility 30-Second Progress Bar & Loading Ball -->
+            <div id="progressContainer" class="progress-container">
+                <div class="progress-header">
+                    <div class="loading-ball"></div>
+                    <div style="flex:1;">
+                        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--gold); margin-bottom:3px;">
+                            <span id="progressStatus">Initializing custom procedural builder...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="progressBarFill" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="export-buttons">
+                <button class="action-btn" style="background:#333; color:#ffd700; border: 1px solid var(--gold);" onclick="exportOBJ()">Export .OBJ (40 Coins)</button>
+                <button class="action-btn" style="background:#333; color:#ff69b4; border: 1px solid var(--pink);" onclick="exportRBLXM()">Export .RBLXM (40 Coins)</button>
+            </div>
+
+            <div id="forgeOutput" class="output-box">Ready. Type any custom prompt and click Generate!</div>
+        </div>
+
+        <!-- Right Column: Viewport -->
+        <div>
+            <h3>👁️ Bloxy 3D Viewport (Drag to Rotate / Scroll to Zoom)</h3>
+            <div class="forge-viewport">
+                <div class="viewport-overlay">BLOXY CUSTOM VIEW</div>
+                <div id="variantTag" class="variant-badge">Custom #1</div>
+                <div id="canvas-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let tapCount = 0;
+    function openMiniGame() {
+        tapCount = 0;
+        document.getElementById('tapScore').innerText = tapCount;
+        document.getElementById('arcadeModal').style.display = 'flex';
+    }
+    function closeMiniGame() {
+        document.getElementById('arcadeModal').style.display = 'none';
+    }
+    function tapCore() {
+        tapCount++;
+        document.getElementById('tapScore').innerText = tapCount;
+        if (tapCount >= 15) {
+            gameData.coins += 50;
+            localStorage.setItem('bloxy3dStudioData', JSON.stringify(gameData));
+            document.getElementById('coinCount').innerText = gameData.coins;
+            alert("🎉 Awesome! You earned +50 DevBucks!");
+            closeMiniGame();
+        }
+    }
+
+    function setPrompt(text) {
+        document.getElementById('aiPrompt').value = text;
+        generate3DModel();
+    }
+
+    function randomizePalette() {
+        const palettes = [
+            ['#ff69b4', '#9c27b0', '#ffd700'],
+            ['#00e5ff', '#1a237e', '#ffea00'],
+            ['#ff3d00', '#d500f9', '#ffffff'],
+            ['#00e676', '#00bcd4', '#1d3557'],
+            ['#d500f9', '#651fff', '#00e5ff'],
+            ['#ff1744', '#b71c1c', '#ffeb3b']
+        ];
+        const pick = palettes[Math.floor(Math.random() * palettes.length)];
+        document.getElementById('primaryColor').value = pick[0];
+        document.getElementById('secondaryColor').value = pick[1];
+        document.getElementById('accentColor').value = pick[2];
+        updateMaterials();
+    }
+
+    let gameData = JSON.parse(localStorage.getItem('bloxy3dStudioData')) || {
+        coins: 200,
+        lastLogin: new Date().toDateString()
+    };
+
+    let today = new Date().toDateString();
+    if (gameData.lastLogin !== today) {
+        gameData.coins = 200;
+        gameData.lastLogin = today;
+        localStorage.setItem('bloxy3dStudioData', JSON.stringify(gameData));
+    }
+
+    document.getElementById('coinCount').innerText = gameData.coins;
+
+    function updateCoins(amount) {
+        if (gameData.coins < amount) {
+            alert("⚠️ Out of DevBucks! Play the mini-game in the top bar to earn more tokens.");
+            return false;
+        }
+        gameData.coins -= amount;
+        localStorage.setItem('bloxy3dStudioData', JSON.stringify(gameData));
+        document.getElementById('coinCount').innerText = gameData.coins;
+        return true;
+    }
+
+    // Three.js Setup with reliable dimension fallbacks
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    
+    const width = Math.max(container.clientWidth, 400);
+    const height = Math.max(container.clientHeight, 480);
+
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.45;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 1.0;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.6);
+    mainLight.position.set(12, 20, 15);
+    mainLight.castShadow = true;
+    scene.add(mainLight);
+
+    const pinkRim = new THREE.PointLight(0xff69b4, 3.5, 30);
+    pinkRim.position.set(-10, 6, -10);
+    scene.add(pinkRim);
+
+    const goldRim = new THREE.PointLight(0ffd700, 3.5, 30);
+    goldRim.position.set(10, 3, -10);
+    scene.add(goldRim);
+
+    const gridHelper = new THREE.GridHelper(14, 28, 0xff69b4, 0x222222);
+    gridHelper.position.y = -1.4;
+    scene.add(gridHelper);
+
+    let currentMesh = new THREE.Group();
+    let primaryMeshes = [], secondaryMeshes = [], accentMeshes = [];
+
+    function getMaterial(hexColor) {
+        const matType = document.getElementById('materialType').value;
+        const roughness = parseFloat(document.getElementById('roughnessSlider').value);
+        const metalness = parseFloat(document.getElementById('metalnessSlider').value);
+
+        if (matType === 'chrome') return new THREE.MeshStandardMaterial({ color: hexColor, roughness: 0.04, metalness: 0.99 });
+        if (matType === 'matte') return new THREE.MeshStandardMaterial({ color: hexColor, roughness: 0.85, metalness: 0.05 });
+        if (matType === 'neon') return new THREE.MeshStandardMaterial({ color: hexColor, emissive: hexColor, emissiveIntensity: 1.4, roughness: 0.15 });
+        if (matType === 'glass') return new THREE.MeshPhysicalMaterial({ color: hexColor, roughness: 0.04, transmission: 0.9, transparent: true, opacity: 0.55, ior: 1.5 });
+        return new THREE.MeshStandardMaterial({ color: hexColor, roughness: roughness, metalness: metalness });
+    }
+
+    function updateMaterials() {
+        const pMat = getMaterial(document.getElementById('primaryColor').value);
+        const sMat = getMaterial(document.getElementById('secondaryColor').value);
+        const aMat = getMaterial(document.getElementById('accentColor').value);
+        primaryMeshes.forEach(m => m.material = pMat);
+        secondaryMeshes.forEach(m => m.material = sMat);
+        accentMeshes.forEach(m => m.material = aMat);
+    }
+
+    function initDefault() {
+        primaryMeshes = []; secondaryMeshes = []; accentMeshes = [];
+        const geom = new THREE.BoxGeometry(1.5, 1.5, 1.5, 16, 16, 16);
+        const mesh = new THREE.Mesh(geom, getMaterial('#ff69b4'));
+        mesh.castShadow = true; mesh.receiveShadow = true;
+        primaryMeshes.push(mesh);
+        currentMesh.add(mesh);
+        scene.add(currentMesh);
+    }
+    initDefault();
+
+    camera.position.set(0, 2.8, 5.2);
+    controls.update();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+        if (!container) return;
+        const w = Math.max(container.clientWidth, 400);
+        const h = Math.max(container.clientHeight, 480);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+    });
+
+    function updateScale() {
+        let sx = parseFloat(document.getElementById('scaleX').value);
+        let sy = parseFloat(document.getElementById('scaleY').value);
+        let sz = parseFloat(document.getElementById('scaleZ').value);
+        document.getElementById('valW').innerText = sx.toFixed(1);
+        document.getElementById('valH').innerText = sy.toFixed(1);
+        document.getElementById('valD').innerText = sz.toFixed(1);
+        if (currentMesh) currentMesh.scale.set(sx, sy, sz);
+    }
+
+    function addShadow(mesh) {
+        mesh.castShadow = true; mesh.receiveShadow = true;
+        return mesh;
+    }
+
+    function createBeveledBox(w, h, d, mat) {
+        const shape = new THREE.Shape();
+        const hw = w / 2, hd = d / 2;
+        const r = 0.08;
+        shape.moveTo(-hw + r, -hd);
+        shape.lineTo(hw - r, -hd);
+        shape.quadraticCurveTo(hw, -hd, hw, -hd + r);
+        shape.lineTo(hw, hd - r);
+        shape.quadraticCurveTo(hw, hd, hw - r, hd);
+        shape.lineTo(-hw + r, hd);
+        shape.quadraticCurveTo(-hw, hd, -hw, hd - r);
+        shape.lineTo(-hw, -hd + r);
+        shape.quadraticCurveTo(-hw, -hd, -hw + r, -hd);
+
+        const extrudeSettings = {
+            steps: 1,
+            depth: h,
+            bevelEnabled: true,
+            bevelThickness: 0.04,
+            bevelSize: 0.04,
+            bevelSegments: 3
+        };
+        const geom = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        geom.center();
+        return addShadow(new THREE.Mesh(geom, mat));
+    }
+
+    function generate3DModel() {
+        let promptField = document.getElementById('aiPrompt');
+        let prompt = promptField.value.trim();
+        if (!prompt) { prompt = "Custom Asset"; promptField.value = prompt; }
+        if (!updateCoins(20)) return;
+
+        let genBtn = document.getElementById('generateBtn');
+        genBtn.disabled = true;
+
+        let progressContainer = document.getElementById('progressContainer');
+        let progressFill = document.getElementById('progressBarFill');
+        let progressStatus = document.getElementById('progressStatus');
+        let progressPercent = document.getElementById('progressPercent');
+        
+        progressContainer.style.display = 'block';
+        let progress = 0;
+
+        // 30-second procedural generation timeline (300ms per 1% step)
+        let interval = setInterval(() => {
+            progress += 1;
+            progressFill.style.width = progress + '%';
+            progressPercent.innerText = progress + '%';
+
+            if (progress === 10) progressStatus.innerText = "Parsing custom prompt tokens...";
+            if (progress === 30) progressStatus.innerText = "Extruding custom beveled mesh layers...";
+            if (progress === 55) progressStatus.innerText = "Welding multi-part modular components...";
+            if (progress === 80) progressStatus.innerText = "Baking PBR materials & lighting...";
+            if (progress === 95) progressStatus.innerText = "Finalizing Roblox Studio package (.RBLXM)...";
+
+            if (progress >= 100) {
+                clearInterval(interval);
+                scene.remove(currentMesh);
+                currentMesh = new THREE.Group();
+                primaryMeshes = []; secondaryMeshes = []; accentMeshes = [];
+
+                const pMat = getMaterial(document.getElementById('primaryColor').value);
+                const sMat = getMaterial(document.getElementById('secondaryColor').value);
+                const aMat = getMaterial(document.getElementById('accentColor').value);
+                const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x88e5ff, roughness: 0.04, transmission: 0.9, transparent: true, opacity: 0.5 });
+
+                let hash = 0;
+                for (let i = 0; i < prompt.length; i++) {
+                    hash = (hash << 5) - hash + prompt.charCodeAt(i);
+                    hash |= 0;
+                }
+                let seed = Math.abs(hash);
+
+                let tiers = (seed % 3) + 3;
+                let baseRadius = 0.8 + ((seed % 5) * 0.15);
+
+                for (let t = 0; t < tiers; t++) {
+                    let yPos = (t * 0.55) - 0.8;
+                    let w = baseRadius * (1.2 - (t * 0.2));
+                    let box = createBeveledBox(w, 0.45, w, t % 2 === 0 ? pMat : sMat);
+                    box.position.y = yPos;
+                    if (t % 2 === 0) primaryMeshes.push(box); else secondaryMeshes.push(box);
+                    currentMesh.add(box);
+                }
+
+                const core = addShadow(new THREE.Mesh(new THREE.OctahedronGeometry(0.6, 0), glassMat));
+                core.position.y = 0.6;
+                currentMesh.add(core);
+
+                const spike = addShadow(new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.9, 6), aMat));
+                spike.position.y = 1.35;
+                accentMeshes.push(spike);
+                currentMesh.add(spike);
+
+                for (let i = 0; i < 4; i++) {
+                    let angle = (i / 4) * Math.PI * 2;
+                    let sideMod = createBeveledBox(0.35, 0.35, 0.35, aMat);
+                    sideMod.position.set(Math.cos(angle) * 1.1, -0.2, Math.sin(angle) * 1.1);
+                    accentMeshes.push(sideMod);
+                    currentMesh.add(sideMod);
+                }
+
+                updateScale();
+                scene.add(currentMesh);
+
+                document.getElementById('variantTag').innerText = prompt.length > 14 ? prompt.substring(0, 12) + "..." : prompt;
+                document.getElementById('forgeOutput').innerText = `✨ Custom asset "${prompt}" generated successfully!`;
+                
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressFill.style.width = '0%';
+                    genBtn.disabled = false;
+                }, 400);
+            }
+        }, 300);
+    }
+
+    function exportOBJ() {
+        if (!updateCoins(40)) return;
+        const exporter = new THREE.OBJExporter();
+        const result = exporter.parse(currentMesh);
+        let blob = new Blob([result], { type: 'text/plain' });
+        let link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Bloxy3D_Custom.obj';
+        link.click();
+        document.getElementById('forgeOutput').innerText = `💾 Exported custom .OBJ successfully!`;
+    }
+
+    function exportRBLXM() {
+        if (!updateCoins(40)) return;
+        let rblxmContent = `<roblox version="4">\n\t<Item class="Model">\n\t\t<Properties>\n\t\t\t<string name="Name">Bloxy3D_CustomModel</string>\n\t\t</Properties>\n\t</Item>\n</roblox>`;
+        let blob = new Blob([rblxmContent], { type: 'text/plain' });
+        let link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Bloxy3D_Custom.rblxm';
+        link.click();
+        document.getElementById('forgeOutput').innerText = `📦 Exported .RBLXM package successfully!`;
+    }
+</script>
+
 </body>
 </html>
