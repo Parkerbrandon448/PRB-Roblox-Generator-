@@ -586,12 +586,12 @@
         return true;
     }
 
-    // Three.js Setup with reliable dimension fallbacks
+    // Three.js Setup
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
     
-    const width = Math.max(container.clientWidth, 400);
-    const height = Math.max(container.clientHeight, 480);
+    const width = container.clientWidth || 500;
+    const height = container.clientHeight || 480;
 
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -677,8 +677,8 @@
 
     window.addEventListener('resize', () => {
         if (!container) return;
-        const w = Math.max(container.clientWidth, 400);
-        const h = Math.max(container.clientHeight, 480);
+        const w = container.clientWidth || 500;
+        const h = container.clientHeight || 480;
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
@@ -743,7 +743,7 @@
         progressContainer.style.display = 'block';
         let progress = 0;
 
-        // 30-second procedural generation timeline (300ms per 1% step)
+        // Exactly 30-second procedural generation timeline (300ms per 1% step)
         let interval = setInterval(() => {
             progress += 1;
             progressFill.style.width = progress + '%';
